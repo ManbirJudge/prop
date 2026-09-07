@@ -29,11 +29,7 @@ void main() {
 
         final timeParse = watch.elapsed.inMilliseconds;
 
-        // watch = Stopwatch()..start();
-        // final out = serialize(formula);
-        // watch.stop();
-        //
-        // final timeSerialize = watch.elapsed.inMilliseconds;
+        final serialized = serialize(formula);
 
         watch = Stopwatch()..start();
         final (vars, tt) = gen_tt(formula, ctxt);
@@ -43,10 +39,11 @@ void main() {
 
         // --- result ---
         String res = '';
+        res += 'Formula: $serialized\n';
         for (var var_name in vars) {
             res += '$var_name ';
         }
-        res += '| Output\n';
+        res += '| \n';
         res += List.filled(vars.length * 2 + 8, '-').join('');
         res += '\n';
         for (var (inp, out) in tt) {

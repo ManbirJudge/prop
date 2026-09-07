@@ -45,3 +45,6 @@ Truth table generated in 0 ms.
 - Error handling.
 - 0/1 output option.
 - Unicode input?
+- Web:
+  - Buttons for input
+  - HTML table for output
