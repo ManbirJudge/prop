@@ -1,14 +1,6 @@
 import 'dart:core';
 import 'dart:io';
 
-// A & B
-// A | B
-// !A
-// A -> B
-// A <-> B
-// A ^ B
-// A & (B | !C | D) = And(A, Or(B, Not(C), D))
-
 // ---
 enum TokenType { amp, bar, ex, arrow, doubleArrow, upArrow, parenOpen, parenClose, lit }
 
@@ -320,7 +312,7 @@ bool eval(Formula formula, Context ctxt) {
                     }
                 }
 
-                return c % 2 == 1;  // if trues are 1
+                return c % 2 == 1;  // if trues are odd
             }
         }
     }
