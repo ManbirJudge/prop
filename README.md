@@ -22,8 +22,8 @@ Propositional logic truth table calculator.
 >$ ./prop '(p & (q -> r)) -> (p | !r)'
 Formula: (p ∧ (q → r)) → (p ∨ ¬r)
 
-p q r | Output
---------------
+p q r | 
+---------
 F F F | T
 F F T | T
 F T F | T
@@ -48,3 +48,4 @@ Truth table generated in 0 ms.
 - Web:
   - Buttons for input
   - HTML table for output
+  - List of symbols

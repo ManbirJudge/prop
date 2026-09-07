@@ -7,13 +7,15 @@ import 'package:prop/prop.dart';
 
 void main() {
     final inBox = document.getElementById('in-box')! as web.HTMLInputElement;
-    final genBtn = document.getElementById('gen-btn')! as web.HTMLButtonElement;
+    final inGroup = document.querySelector('.in-form')! as web.HTMLFormElement;
     final outBox = document.getElementById('out-box')! as web.HTMLTextAreaElement;
     final statToken = document.getElementById('stat-token')! as web.HTMLSpanElement;
     final statParse = document.getElementById('stat-parse')! as web.HTMLSpanElement;
     final statTt = document.getElementById('stat-tt')! as web.HTMLSpanElement;
 
-    void genBtnOnClick() {
+    void onSubmit(SubmitEvent evt) {
+        evt.preventDefault();
+
         Stopwatch watch = Stopwatch()..start();
         final tokens = tokenize(inBox.value);
         watch.stop();
@@ -39,12 +41,12 @@ void main() {
 
         // --- result ---
         String res = '';
-        res += 'Formula: $serialized\n';
+        res += 'Formula: $serialized\n\n';
         for (var var_name in vars) {
             res += '$var_name ';
         }
         res += '| \n';
-        res += List.filled(vars.length * 2 + 8, '-').join('');
+        res += List.filled(vars.length * 2 + 3, '-').join('');
         res += '\n';
         for (var (inp, out) in tt) {
             for (var var_name in vars) {
@@ -58,5 +60,6 @@ void main() {
         statParse.innerText = '$timeParse';
         statTt.innerText = '$timeTt';
     }
-    genBtn.addEventListener('click', genBtnOnClick.toJS);
+
+    inGroup.addEventListener('submit', onSubmit.toJS);
 }
