@@ -1,5 +1,4 @@
-out
-prop
+build/
 
 pubspec.lock
 .dart_tool/

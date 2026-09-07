@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>prop</title>
+    <style>
+        :root {
+            --bg-color: black;
+            --card-bg: #111;
+            --border-color: #222;
+            --text-main: #eee;
+            --text-muted: #ccc;
+            --accent-color: #357ec7;
+            --font-mono: 'JetBrains Mono', monospace;
+            --font-sans: Roboto, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 640px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 28px;
+        }
+
+        header {
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 16px;
+        }
+
+        h1 {
+            font-family: var(--font-mono);
+            font-size: 1.8rem;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+        }
+
+        .description {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-top: 4px;
+        }
+
+        .in-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #in-box {
+            flex: 1;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px 14px;
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        #in-box:focus {
+            border-color: var(--accent-color);
+        }
+
+        #gen-btn {
+            background-color: var(--accent-color);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-family: var(--font-sans);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: transition 0.2s ease;
+        }
+
+        #out-box {
+            width: 100%;
+            height: 220px;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 14px;
+            color: #a5d6ff;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            resize: vertical;
+            outline: none;
+            margin-bottom: 20px;
+            white-space: pre;
+        }
+
+        .stats {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px 16px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        .stats span {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        footer {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+        }
+
+        footer a {
+            color: var(--text-main);
+            text-decoration: none;
+            border-bottom: 1px stroke var(--text-muted);
+        }
+
+        footer a:hover {
+            color: var(--accent-color);
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <main class="container">
+        <header>
+            <h1>prop</h1>
+            <p class="description">Propositional logic truth table calculator.</p>
+        </header>
+        <div class="in-group">
+            <input id="in-box" type="text" placeholder="Enter formula (e.g. A && B)...">
+            <button id="gen-btn">Calc</button>
+        </div>
+        <textarea id="out-box" readonly placeholder="Output will appear here..."></textarea>
+        <div class="stats">
+            <div>Tokenized in <span id="stat-token">-</span> ms.</div>
+            <div>Parsed in <span id="stat-parse">-</span> ms.</div>
+            <div>Truth table generated in <span id="stat-tt">-</span> ms.</div>
+        </div>
+        <footer>
+            Made with ❤️ by <a href="https://github.com/ManbirJudge" target="_blank" rel="noopener">Manbir Judge</a> | 
+            <a href="https://github.com/ManbirJudge/prop" target="_blank" rel="noopener">GitHub</a>
+        </footer>
+    </main>
+
+    <script src="main.js"></script>
+</body>
+</html>

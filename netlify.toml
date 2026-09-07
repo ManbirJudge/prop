@@ -1,0 +1,10 @@
+[build]
+  command = """
+  mkdir -p bin
+  curl -sSL https://storage.googleapis.com/dart-archive/channels/stable/release/latest/sdk/dartsdk-linux-x64-release.zip -o dart-sdk.zip
+  unzip -q dart-sdk.zip -d dart-bin/
+  export PATH="$PATH:$PWD/dart-bin/dart-sdk/bin"
+  make web
+  """
+  
+  publish = "build/web"

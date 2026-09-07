@@ -1,15 +1,23 @@
 # prop
 Propositional logic truth table calculator.
 
+## Usage
+- `prop <formula>`
+- Symbols:
+  - `!` for NOT
+  - `&` for AND
+  - `|` for OR
+  - `^` for XOR
+  - `->` for IMPLICATION
+  - `<->` for BICONDITIONAL
+
 ## Capabilities
 - NOT, AND, OR, XOR, IMPLICATION, BICONDITIONAL, variables and constants.
 - Handles presedence.
 - Any number of variables.
 - ASCII input, unicode pretty-print output.
 
-## Examples
-Build using `dart compile exe bin/prop.dart -o prop`.<br>
-Usage example:
+## Example
 ```
 >$ ./prop '(p & (q -> r)) -> (p | !r)'
 Formula: (p ∧ (q → r)) → (p ∨ ¬r)
@@ -33,7 +41,7 @@ Truth table generated in 0 ms.
 ```
 
 ## TODOs
-- Organize code in the 'dart way'.
+- ~~Organize code in the 'dart way'.~~
+- Error handling.
 - 0/1 output option.
 - Unicode input?
-- Web or UI?
