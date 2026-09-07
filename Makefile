@@ -19,8 +19,10 @@ cli: $(CLI_SRC)
 web: $(WEB_SRC) $(WEB_DIR)/index.html
 	rm -rf $(WEB_BUILD_DIR)
 	mkdir -p $(WEB_BUILD_DIR)
+
 	dart compile js $(WEB_SRC) -O4 -o $(WEB_BUILD_DIR)/main.js
-	cp $(WEB_DIR)/index.html $(WEB_BUILD_DIR)/
+
+	cp $(WEB_DIR)/index.html $(WEB_DIR)/icon.png $(WEB_DIR)/manifest.json $(WEB_DIR)/sw.js $(WEB_BUILD_DIR)/
 
 clean:
 	rm -rf $(BUILD_DIR)

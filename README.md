@@ -49,3 +49,5 @@ Truth table generated in 0 ms.
   - Buttons for input
   - HTML table for output
   - List of symbols
+  - ~~Mobile responsive~~
+  - ~~PWA~~
