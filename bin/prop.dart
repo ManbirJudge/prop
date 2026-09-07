@@ -1,4 +1,5 @@
 import 'dart:core';
+import 'dart:io';
 
 // A & B
 // A | B
@@ -9,7 +10,7 @@ import 'dart:core';
 // A & (B | !C | D) = And(A, Or(B, Not(C), D))
 
 // ---
-enum TokenType { amp, bar, ex, arrow, doubleArrow, upArrow, parenOpen, parenClose, variable }
+enum TokenType { amp, bar, ex, arrow, doubleArrow, upArrow, parenOpen, parenClose, lit }
 
 typedef Token = (TokenType, String);
 
@@ -19,6 +20,12 @@ enum BinOpType { implication, biconditional }
 enum VariadicOpType { and, or, xor }
 
 class Formula;
+
+class Const extends Formula {
+    final bool val;
+
+    Const({required this.val});
+}
 
 class Var extends Formula {
     final String name;
@@ -119,14 +126,14 @@ List<Token> tokenize(String str) {
 
         if (done) continue;
 
-        String varName = '';
+        String name = '';
         idx--;
         while (idx < str.length && RegExp(r'^[a-zA-Z]$').hasMatch(str[idx])) {
-            varName += str[idx];
+            name += str[idx];
             idx++;
         }
 
-        tokens.add((TokenType.variable, varName));
+        tokens.add((TokenType.lit, name));
     }
 
     return tokens;
@@ -158,14 +165,21 @@ class Parser {
     }
 }
 
-Formula parsePrimary(Parser parser) {
+Formula parsePrimary(Parser parser, Context ctxt) {
     if (parser.available()) {
         Token tok = parser.consume();
 
-        if (tok.$1 == TokenType.variable) {
-            return Var(name: tok.$2);
+        if (tok.$1 == TokenType.lit) {
+            if (tok.$2 == 'T') {
+                return Const(val: true);
+            } else if (tok.$2 == 'F') {
+                return Const(val: false);
+            } else {
+                ctxt[tok.$2] = false;  // add variable to context with defautl value of false
+                return Var(name: tok.$2);
+            }
         } else if (tok.$1 == TokenType.parenOpen) {
-            Formula frmla = parse(parser);
+            Formula frmla = parse(parser, ctxt);
             if (parser.consume().$1 == TokenType.parenClose) {
                 return frmla;
             }
@@ -174,22 +188,22 @@ Formula parsePrimary(Parser parser) {
     throw Exception('FUCK YOU');
 }
 
-Formula parseNot(Parser parser) {
+Formula parseNot(Parser parser, Context ctxt) {
     if (parser.inspect().$1 == TokenType.ex) {
         parser.consume();
 
-        Formula sub = parsePrimary(parser);
+        Formula sub = parsePrimary(parser, ctxt);
         return UnaryOp(type: UnaryOpType.not, sub: sub);
     }
-    return parsePrimary(parser);
+    return parsePrimary(parser, ctxt);
 }
 
-Formula parseAnd(Parser parser) {
-    List<Formula> sub = [parseNot(parser)];
+Formula parseAnd(Parser parser, Context ctxt) {
+    List<Formula> sub = [parseNot(parser, ctxt)];
 
     while (parser.available() && parser.inspect().$1 == TokenType.amp) {
         parser.consume();
-        sub.add(parseNot(parser));
+        sub.add(parseNot(parser, ctxt));
     }
 
     if (sub.length == 1) {
@@ -199,12 +213,12 @@ Formula parseAnd(Parser parser) {
     }
 }
 
-Formula parseXor(Parser parser) {
-    List<Formula> sub = [parseAnd(parser)];
+Formula parseXor(Parser parser, Context ctxt) {
+    List<Formula> sub = [parseAnd(parser, ctxt)];
 
     while (parser.available() && (parser.inspect().$1 == TokenType.upArrow)) {
         parser.consume();
-        sub.add(parseAnd(parser));
+        sub.add(parseAnd(parser, ctxt));
     }
 
     if (sub.length == 1) {
@@ -214,12 +228,12 @@ Formula parseXor(Parser parser) {
     }
 }
 
-Formula parseOr(Parser parser) {
-    List<Formula> sub = [parseXor(parser)];
+Formula parseOr(Parser parser, Context ctxt) {
+    List<Formula> sub = [parseXor(parser, ctxt)];
 
     while (parser.available() && (parser.inspect().$1 == TokenType.bar)) {
         parser.consume();
-        sub.add(parseXor(parser));
+        sub.add(parseXor(parser, ctxt));
     }
 
     if (sub.length == 1) {
@@ -229,32 +243,110 @@ Formula parseOr(Parser parser) {
     }
 }
 
-Formula parseImplication(Parser parser) {
-    Formula left = parseOr(parser);
+Formula parseImplication(Parser parser, Context ctxt) {
+    Formula left = parseOr(parser, ctxt);
 
     while (parser.available() && parser.inspect().$1 == TokenType.arrow) {
         parser.consume();
-        Formula right = parseImplication(parser);
+        Formula right = parseImplication(parser, ctxt);
         left = BinaryOp(type: BinOpType.implication, left: left, right: right);
     }
 
     return left;
 }
 
-Formula parseBiconditional(Parser parser) {
-    Formula left = parseImplication(parser);
+Formula parseBiconditional(Parser parser, Context ctxt) {
+    Formula left = parseImplication(parser, ctxt);
 
     while (parser.available() && (parser.inspect().$1 == TokenType.doubleArrow)) {
         parser.consume();
-        Formula right = parseImplication(parser);
+        Formula right = parseImplication(parser, ctxt);
         left = BinaryOp(type: BinOpType.biconditional, left: left, right: right);
     }
 
     return left;
 }
 
-Formula parse(Parser parser) {
-    return parseBiconditional(parser);
+Formula parse(Parser parser, Context ctxt) {
+    return parseBiconditional(parser, ctxt);
+}
+
+// ---
+typedef Context = Map<String, bool>;
+typedef Input   = Map<String, bool>;
+typedef TT      = List<(Input, bool)>;
+
+bool eval(Formula formula, Context ctxt) {
+    if (formula is Const) {
+        return formula.val;
+    } else if (formula is Var) {
+        return ctxt[formula.name]!;
+    } else if (formula is UnaryOp) {
+        final sub = eval(formula.sub, ctxt);
+
+        switch (formula.type) {
+            case UnaryOpType.not: {
+                return !sub;
+            }
+        }
+    } else if (formula is BinaryOp) {
+        final left = eval(formula.left, ctxt);
+        final right = eval(formula.right, ctxt);
+
+        switch (formula.type) {
+            case BinOpType.implication: {
+                if (!left) return true;
+                else return right;
+            }
+            case BinOpType.biconditional: {
+                return left == right;
+            }
+        }
+    } else if (formula is VariadicOp) {
+        var sub = formula.sub.map((x) => eval(x, ctxt)).toList();
+
+        switch (formula.type) {
+            case VariadicOpType.and: {
+                return !sub.any((x) => !x);  // there is no false
+            }
+            case VariadicOpType.or: {
+                return sub.any((x) => x);  // there is any true
+            }
+            case VariadicOpType.xor: {
+                int c = 0;
+                for (var x in sub) {
+                    if (x) {
+                        c++;
+                    }
+                }
+
+                return c % 2 == 1;  // if trues are 1
+            }
+        }
+    }
+
+    throw Exception('FUCK YOU 2');
+}
+
+(List<String>, TT) gen_tt(Formula formula, Context ctxt) {
+    final vars = ctxt.keys.toList();
+
+    TT tt = [];
+
+    final int n_vars = vars.length;
+    final int n_combinations = 1 << n_vars;
+
+    for (int mask = 0; mask < n_combinations; mask++) {
+        Input inp = {};
+
+        for (int i = 0; i < n_vars; i++) {
+            inp[vars[n_vars - i - 1]] = ((mask >> i) & 1) == 1;
+        }
+
+        tt.add((inp, eval(formula, inp)));
+    }
+
+    return (vars, tt);
 }
 
 // ---
@@ -262,7 +354,9 @@ String serialize(Formula formula, {bool unicode = true}) {
     String out = '';
 
     void y(Formula f) {
-        if (f is Var) {
+        if (f is Const) {
+            out += f.val ? 'T' : 'F';
+        } else if (f is Var) {
             out += f.name;
         } else if (f is UnaryOp) {
             out += serialize(f);
@@ -270,8 +364,10 @@ String serialize(Formula formula, {bool unicode = true}) {
             out += '(${serialize(f)})';
         }
     }
-
-    if (formula is Var) {
+    
+    if (formula is Const) {
+        out += formula.val ? 'T' : 'F';
+    } else if (formula is Var) {
         out += formula.name;
     } else if (formula is UnaryOp) {
         switch (formula.type) {
@@ -332,9 +428,11 @@ void main(List<String> args) {
 
     final timeToken = watch.elapsed.inMilliseconds;
 
+    Context ctxt = {};
+
     watch = Stopwatch()..start();
     final parser = Parser(tokens: tokens);
-    final formula = parse(parser);
+    final formula = parse(parser, ctxt);
     watch.stop();
 
     final timeParse = watch.elapsed.inMilliseconds;
@@ -345,10 +443,29 @@ void main(List<String> args) {
     
     final timeSerialize = watch.elapsed.inMilliseconds;
 
-    print(out);
+    watch = Stopwatch()..start();
+    final (vars, tt) = gen_tt(formula, ctxt);
+    watch.stop();
+    
+    final timeTt = watch.elapsed.inMilliseconds;
+
+    print('Formula: $out\n');
+
+    for (var var_name in vars) {
+        stdout.write('$var_name ');
+    }
+    print('| Output');
+    print(List.filled(vars.length * 2 + 8, '-').join(''));
+    for (var (inp, out) in tt) {
+        for (var var_name in vars) {
+            stdout.write('${inp[var_name]! ? 'T' : 'F'} ');
+        }
+        print('| ${out ? 'T' : 'F'}');
+    }
 
     print('\nStats:');
     print('Tokenized in $timeToken ms.');
     print('Parsed in $timeParse ms.');
     print('Serialized in $timeSerialize ms.');
+    print('Truth table generated in $timeTt ms.');
 }
